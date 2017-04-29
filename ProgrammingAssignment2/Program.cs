@@ -72,13 +72,15 @@ namespace ProgrammingAssignment2
             }
         }
 
-        static void printDirectory(FileSystemInfo dir)
+        static void printDirectory(FileSystemInfo fileSystemInfo)
         {
+            DirectoryInfo dir = (DirectoryInfo)fileSystemInfo;
             Console.WriteLine(dir.Name);
         }
 
-        static void printFile(FileSystemInfo file)
+        static void printFile(FileSystemInfo fileSystemInfo)
         {
+            FileInfo file = (FileInfo)fileSystemInfo;
             Console.WriteLine(file.Name);
         }
 
