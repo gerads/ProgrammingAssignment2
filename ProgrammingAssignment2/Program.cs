@@ -10,29 +10,44 @@ namespace ProgrammingAssignment2
 {
     class Program
     {
-        static bool Recursive = false;
+        static readonly string FILE_FORMAT = "{0,-7} {1,10} {2,20} {3,-50}";
+
+        static SearchOption Recursive = SearchOption.TopDirectoryOnly;
         static string InputPath = Directory.GetCurrentDirectory();
 
-        static int TotalFiles = 0;
-        static int TotalDirectories = 0;
-        static int TotalLinks = 0;
-        static int TotalOther = 0;
-        static int TotalEntries = 0;
+        static Dictionary<string, int> Summary = new Dictionary<string, int>()
+        {
+            { "Files", 0 },
+            { "Directories", 0 },
+            { "Entries", 0 }
+        };
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             parseArgs(args);
 
             if (File.Exists(InputPath))
             {
-                printFile(new FileInfo(InputPath));
+                PrintFile(new FileInfo(InputPath));
+                Summary["Files"]++;
             }
             else if (Directory.Exists(InputPath))
             {
-                traverse(InputPath);
+                Traverse(InputPath);
+            }
+            else
+            {
+                return 1;
             }
 
-            printSummary();
+            PrintSummary();
+
+//For testing in VS - can remove if unwanted.
+#if DEBUG
+            Console.WriteLine("Press enter to exit...");
+            Console.ReadLine();
+#endif
+            return 0;
         }
 
         static void parseArgs(string[] args)
@@ -41,7 +56,7 @@ namespace ProgrammingAssignment2
             {
                 if (arg.Equals("-r", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Recursive = true;
+                    Recursive = SearchOption.AllDirectories;
                 }
                 else
                 {
@@ -50,43 +65,57 @@ namespace ProgrammingAssignment2
             }
         }
 
-        static void traverse(string path)
+        static void Traverse(string path)
         {
             var currentDir = new DirectoryInfo(path);
-            var files = currentDir.GetFileSystemInfos();
+            var files = currentDir.GetFileSystemInfos("*", Recursive);
             foreach (var file in files)
             {
                 if (file.Attributes.HasFlag(FileAttributes.Directory))
                 {
-                    printDirectory(file);
-
-                    if (Recursive)
-                    {
-                        traverse(file.FullName);
-                    }
+                    PrintDirectory(file);
+                    Summary["Directories"]++;
                 }
                 else
                 {
-                    printFile(file);
+                    PrintFile(file);
+                    Summary["Files"]++;
                 }
             }
         }
 
-        static void printDirectory(FileSystemInfo fileSystemInfo)
+        static void PrintDirectory(FileSystemInfo file)
         {
-            DirectoryInfo dir = (DirectoryInfo)fileSystemInfo;
-            Console.WriteLine(dir.Name);
+            var line = string.Format(FILE_FORMAT,
+                file.Attributes.GetHashCode(),
+                string.Empty,
+                file.CreationTimeUtc,
+                file.Name);
+            Console.WriteLine(line);
         }
 
-        static void printFile(FileSystemInfo fileSystemInfo)
+        static void PrintFile(FileSystemInfo file)
         {
-            FileInfo file = (FileInfo)fileSystemInfo;
-            Console.WriteLine(file.Name);
+            var line = string.Format(FILE_FORMAT,
+                file.Attributes.GetHashCode(),
+                ((FileInfo)file)?.Length.ToString() ?? "-",
+                file.CreationTimeUtc,
+                file.Name);
+            Console.WriteLine(line);
         }
 
-        static void printSummary()
+        static void PrintSummary()
         {
-            
+            Summary["Entries"] = Summary.Where(c => !c.Key.Equals("Entries", StringComparison.InvariantCultureIgnoreCase)).Sum(c => c.Value);
+
+            var summary = new StringBuilder();
+
+            foreach (var category in Summary)
+            {
+                summary.AppendLine(string.Format("{0,-20} {1,10}", string.Format("Total {0}:", category.Key), category.Value));
+            }
+
+            Console.WriteLine(summary.ToString());
         }
     }
 }
