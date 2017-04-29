@@ -24,7 +24,7 @@ namespace ProgrammingAssignment2
 
         static int Main(string[] args)
         {
-            parseArgs(args);
+            ParseArgs(args);
 
             if (File.Exists(InputPath))
             {
@@ -50,7 +50,7 @@ namespace ProgrammingAssignment2
             return 0;
         }
 
-        static void parseArgs(string[] args)
+        static void ParseArgs(string[] args)
         {
             foreach (var arg in args)
             {
