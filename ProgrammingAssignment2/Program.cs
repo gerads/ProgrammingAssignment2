@@ -25,15 +25,14 @@ namespace ProgrammingAssignment2
 
             if (File.Exists(InputPath))
             {
-                //do the file
+                printFile(new FileInfo(InputPath));
             }
             else if (Directory.Exists(InputPath))
             {
-                //do the dir
                 traverse(InputPath);
             }
 
-            //print summary
+            printSummary();
         }
 
         static void parseArgs(string[] args)
@@ -75,12 +74,17 @@ namespace ProgrammingAssignment2
 
         static void printDirectory(FileSystemInfo dir)
         {
-
+            Console.WriteLine(dir.Name);
         }
 
         static void printFile(FileSystemInfo file)
         {
+            Console.WriteLine(file.Name);
+        }
 
+        static void printSummary()
+        {
+            
         }
     }
 }
