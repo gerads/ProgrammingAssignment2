@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace ProgrammingAssignment2
     {
         static readonly string FILE_FORMAT = "{0,-7} {1,10} {2,20} {3,-50}";
 
-        static SearchOption Recursive = SearchOption.TopDirectoryOnly;
+        static bool Recursive = false;
         static string InputPath = Directory.GetCurrentDirectory();
 
         static Dictionary<string, int> Summary = new Dictionary<string, int>()
@@ -56,7 +56,7 @@ namespace ProgrammingAssignment2
             {
                 if (arg.Equals("-r", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Recursive = SearchOption.AllDirectories;
+                    Recursive = true;
                 }
                 else
                 {
@@ -67,19 +67,40 @@ namespace ProgrammingAssignment2
 
         static void Traverse(string path)
         {
-            var currentDir = new DirectoryInfo(path);
-            var files = currentDir.GetFileSystemInfos("*", Recursive);
-            foreach (var file in files)
+            Queue<DirectoryInfo> directories = new Queue<DirectoryInfo>();
+
+            directories.Enqueue(new DirectoryInfo(path));
+
+            while (directories.Count > 0)
             {
-                if (file.Attributes.HasFlag(FileAttributes.Directory))
+                var currentDirectory = directories.Dequeue();
+                PrintDirectory(currentDirectory);
+
+                try
                 {
-                    PrintDirectory(file);
-                    Summary["Directories"]++;
+                    foreach (var file in currentDirectory.GetFiles())
+                    {
+                        PrintFile(file);
+                    }
                 }
-                else
+                catch
                 {
-                    PrintFile(file);
-                    Summary["Files"]++;
+                    //can't do it
+                }
+
+                try
+                {
+                    if (Recursive)
+                    {
+                        foreach (var dir in currentDirectory.GetDirectories())
+                        {
+                            directories.Enqueue(dir);
+                        }
+                    }
+                }
+                catch
+                {
+
                 }
             }
         }
@@ -92,6 +113,7 @@ namespace ProgrammingAssignment2
                 file.CreationTimeUtc,
                 file.Name);
             Console.WriteLine(line);
+            Summary["Directories"]++;
         }
 
         static void PrintFile(FileSystemInfo file)
@@ -102,6 +124,7 @@ namespace ProgrammingAssignment2
                 file.CreationTimeUtc,
                 file.Name);
             Console.WriteLine(line);
+            Summary["Files"]++;
         }
 
         static void PrintSummary()
