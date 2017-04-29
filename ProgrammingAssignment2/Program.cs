@@ -68,7 +68,7 @@ namespace ProgrammingAssignment2
                 }
                 else
                 {
-                    //print file shit
+                    printFile(file);
                 }
             }
         }
